@@ -1,0 +1,456 @@
+<% 
+  const priceForm = (p) => {
+    const price = 'Rp. ';
+    const angka = p.toString().replace(/\B(?<!\.\d*)(?=(\d{3})+(?!\d))/g, ".");
+
+    return price + angka;
+  }
+
+  const products = data[0];
+  const owner = data[1];
+
+  let category = [];
+  const unique = (value, index, self) => {
+    return self.indexOf(value) === index;
+  }
+
+  products.forEach(e => {
+    let filtered = e.category.charAt(0).toUpperCase() + e.category.substring(1);
+    category.push(filtered);
+  })
+
+  category = category.filter(unique);
+  category = category.sort()
+%>
+
+<!-- jumbotron start -->
+<div class="p-5 bg-primary text-white text-center">
+  <div class="container-fluid py-5">
+    <h1 class="display-5 fw-bold brand">Little-f</h1>
+    <p>Berbelanja dimanapun kamu mau</p>
+  </div>
+</div>
+<div class="svg-bg-top"></div>
+<!-- jumbotron end -->
+
+<div class="container mb-5 mt-5">
+
+  <!-- produk unggulan -->  
+  <div class="container shadow p-4 mb-5 rounded-3" id="unggulan">
+    <h4 class="text-center p-3">Produk unggulan kami :</h4>
+    <div class="row justify-content-center">
+
+      <!-- looping produk unggulan -->
+      <% let bestProducts = products.filter(p => p.bestProduct == 'Y') %>
+      <% if (bestProducts.length == 0) { %>
+       <h5 class="text-center mt-5 mb-5">Belum ada produk</h5>
+      <% } %>
+      <% bestProducts.forEach(product => { %>
+        <% const img = JSON.parse(product.image) %>
+        <div class="col-md-4 mb-3">
+          <div class="card h-100 mb-4 rounded-end" data-aos="fade-up" data-aos-delay="100" data-aos-once="true">
+            <!-- menambahkan class ribbon untuk unggulan -->
+            <% if (product.bestProduct.toUpperCase() == 'Y') { %>
+              <span class="ribbon">SPESIAL</span>
+            <% } %>                              
+            <img src="<%= img[0] %>" class="card-img-top" alt="<%= product.name %>" loading="lazy">
+            <div class="card-body">
+              <h5 class="card-title"><%= product.name %></h5>
+              <h5 class="card-title text-success"><%= priceForm(product.price) %></h5>
+            </div>
+            <div class="text-center mt-3 card-footer bg-white border-0">
+
+              <% if (locals.isLoggedIn) { %>
+               <!-- Button trigger modal -->
+              <button type="button" class="btn btn-danger mt-2" data-bs-toggle="modal" data-bs-target="#delete<%= product.code %>">
+                Hapus
+              </button>
+
+              <!-- Modal -->
+              <div class="modal fade" id="delete<%= product.code %>" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+                <div class="modal-dialog">
+                  <div class="modal-content shadow">
+                    <div class="modal-body">
+                      <h5>Apakah anda yakin?</h5>
+                    </div>
+                    <div class="modal-footer">
+                      <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                      <form action="/delete/<%= product.id %>" method="post">
+                        <button type="submit" value="<%= product.id %>" class="btn btn-danger">Hapus</button>
+                      </form>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <a href="/update/<%= product.id %>" class="btn btn-warning mt-2">Perbaharui</a>
+              <% } %>
+              
+              <button type="button" class="btn btn-primary mt-2" data-bs-toggle="modal" data-bs-target="#<%= product.code %>">
+                Detail produk
+              </button>
+              <a href="<%= product.shopee %>" class="btn text-white mt-2 shopee" role="button" target="blank">Order lewat Shopee</a>
+            </div>
+            <div class="modal fade" id="<%= product.code %>" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+              <!-- modal full screen -->
+              <div class="modal-dialog modal-fullscreen">
+                <div class="modal-content">
+                  <div class="modal-header">
+                    <h3 class="modal-title" id="staticBackdropLabel"><%= product.name %></h3>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                  </div>
+                  <div class="row p-md-3 bg-white justify-content-center">
+                    <div class="col-md-5">
+                      <!-- carousel start -->
+                      <div id="carousel<%= product.code %>" class="carousel slide" data-bs-ride="carousel">
+                        <div class="carousel-indicators">
+                          <button type="button" data-bs-target="#carousel<%= product.code %>" data-bs-slide-to="0" class="active" aria-current="true" aria-label="Slide 1"></button>
+                          <% for( let i = 1; i < img.length; i++ ) { %>
+                            <button type="button" data-bs-target="#carousel<%= product.code %>" data-bs-slide-to="<%= i %>" aria-label="Slide <%= i %>"></button>
+                          <% } %>
+                        </div>
+                        <div class="carousel-inner">
+                          <div class="carousel-item active">
+                            <img src="<%= img[0] %>" class="d-block w-100" alt="<%= product.name %>">
+                          </div>
+                          <% for( let i = 1; i < img.length; i++ ) { %>
+                            <div class="carousel-item">
+                              <img src="<%= img[i] %>" class="d-block w-100" alt="<%= product.name %>">
+                            </div>
+                          <% } %>
+                        </div>
+                        <button class="carousel-control-prev" type="button" data-bs-target="#carousel<%= product.code %>" data-bs-slide="prev">
+                          <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                          <span class="visually-hidden">Previous</span>
+                        </button>
+                        <button class="carousel-control-next" type="button" data-bs-target="#carousel<%= product.code %>" data-bs-slide="next">
+                          <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                          <span class="visually-hidden">Next</span>
+                        </button>
+                      </div>
+                      <!-- carousel end -->
+                    </div>
+                    <div class="col-md-7 p-4">
+                      <h3 class="card-title text-success pt-3"><%= priceForm(product.price) %></h3>
+                      <% const desc = JSON.parse(product.description) %>
+                      <% for( let i = 0; i < desc.length; i++ ) { %>
+                        <h5><%= desc[i] %></h5>
+                      <% } %>
+                      <div class="modal-footer">
+
+                        <% if (locals.isLoggedIn) { %>
+                         <!-- Button trigger modal -->
+                        <button type="button" class="btn btn-danger mt-2" data-bs-toggle="modal" data-bs-target="#delete2<%= product.code %>">
+                          Hapus
+                        </button>
+
+                        <!-- Modal -->
+                        <div class="modal fade" id="delete2<%= product.code %>" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+                          <div class="modal-dialog">
+                            <div class="modal-content shadow">
+                              <div class="modal-body">
+                                <h5>Apakah anda yakin?</h5>
+                              </div>
+                              <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                <form action="/delete/<%= product.id %>" method="post">
+                                  <button type="submit" value="<%= product.id %>" class="btn btn-danger">Hapus</button>
+                                </form>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+
+                        <a href="/update/<%= product.id %>" class="btn btn-warning mt-2">Perbaharui</a>
+                        <% } %>
+
+                        <button type="button" class="btn btn-secondary mt-2" data-bs-dismiss="modal">Close</button>
+                        <a href="<%= product.shopee %> " class="btn text-white mt-2 shopee" role="button" target="blank">Order lewat Shopee</a>
+                        <a href="https://api.whatsapp.com/send?phone=<%= owner[0].whatsapp %>&text=Apakah%20&quot;<%= product.name.replace('\s', '%20') %>&quot;%20masih%20ada?" class="btn mt-2 whatsapp text-white" role="button" target="blank">
+                          <span class="bi bi-whatsapp"></span>&nbsp;&nbsp;Chat
+                        </a>
+                      </div>      
+                    </div>
+                  </div>                        
+                </div>
+              </div>
+              <!-- modal full screen end-->
+            </div>
+          </div>
+        </div>
+      <% }) %> 
+    </div>
+  </div>
+  <!-- akhir produk unggulan -->
+
+  <%- include('about.html') %>
+
+    <!-- semua produk -->
+    <div class="semua-produk rounded-3 shadow bg-white p-4 mt-5" id="allProducts">
+
+      <div class="dropdown text-center d-grid col-6 mx-auto mt-2 mb-4">
+        <button class="btn btn-primary dropdown-toggle" type="button" id="dropdownMenuButton2" data-bs-toggle="dropdown" aria-expanded="false">
+          Filter Produk
+        </button>
+          <div class="dropdown-menu dropdown-menu-dark col-12 mx-auto text-center" aria-labelledby="dropdownMenuButton2">
+            <button class="dropdown-item" onclick="filterSelection('all')">Semua Produk</button>
+            <% category.forEach(e => { %>
+              <button class="dropdown-item" onclick="filterSelection('<%= e.toLowerCase() %>')"><%= e %></button>
+            <% }) %>
+          </div>
+      </div>
+
+      <div class="row justify-content-center">
+        <% if (products.length == 0) { %>
+          <h5 class="text-center mt-5 mb-5">Belum ada produk</h5>
+         <% } %>
+        <% products.forEach(product => { %>
+          <% const img = JSON.parse(product.image) %> 
+          <div class="col-md-4 mb-3 product-card <%= product.category.toLowerCase() %>">
+            <div class="card h-100 mb-4 rounded-end" data-aos="fade-up" data-aos-delay="100" data-aos-once="true">
+              <!-- menambahkan class ribbon untuk unggulan -->
+              <% if (product.bestProduct == 'Y') { %>
+                <span class="ribbon">SPESIAL</span>
+              <% } %>                              
+              <img src="<%= img[0] %>" class="card-img-top" alt="<%= product.name %>" loading="lazy">
+              <div class="card-body">
+                <h5 class="card-title"><%= product.name %></h5>
+                <h5 class="card-title text-success"><%= priceForm(product.price) %></h5>
+              </div>
+              <div class="text-center mt-3 card-footer bg-white border-0">
+                
+                <% if (locals.isLoggedIn) { %>
+                 <!-- Button trigger modal -->
+                <button type="button" class="btn btn-danger mt-2" data-bs-toggle="modal" data-bs-target="#delete<%= product.code %>">
+                  Hapus
+                </button>
+
+                <!-- Modal -->
+                <div class="modal fade" id="delete<%= product.code %>" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+                  <div class="modal-dialog">
+                    <div class="modal-content shadow">
+                      <div class="modal-body">
+                        <h5>Apakah anda yakin?</h5>
+                      </div>
+                      <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                        <form action="/delete/<%= product.id %>" method="post">
+                          <button type="submit" value="<%= product.id %>" class="btn btn-danger">Hapus</button>
+                        </form>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                
+                <a href="/update/<%= product.id %>" class="btn btn-warning mt-2">Perbaharui</a>
+                <% } %>
+
+                <button type="button" class="btn btn-primary mt-2" data-bs-toggle="modal" data-bs-target="#<%= product.code %>">
+                  Detail produk
+                </button>
+                <a href="<%= product.shopee %>" class="btn text-white mt-2 shopee" role="button" target="blank">Order lewat Shopee</a>
+              </div>
+              <div class="modal fade" id="<%= product.code %>" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+                <!-- modal full screen -->
+                <div class="modal-dialog modal-fullscreen">
+                  <div class="modal-content">
+                    <div class="modal-header">
+                      <h3 class="modal-title" id="staticBackdropLabel"><%= product.name %></h3>
+                      <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="row p-md-3 bg-white justify-content-center">
+                      <div class="col-md-5">
+                        <!-- carousel start -->
+                        <div id="carousel<%= product.code %>" class="carousel slide" data-bs-ride="carousel">
+                          <div class="carousel-indicators">
+                            <button type="button" data-bs-target="#carousel<%= product.code %>" data-bs-slide-to="0" class="active" aria-current="true" aria-label="Slide 1"></button>
+                            <% for( let i = 1; i < img.length; i++ ) { %>
+                              <button type="button" data-bs-target="#carousel<%= product.code %>" data-bs-slide-to="<%= i %>" aria-label="Slide <%= i %>"></button>
+                            <% } %>
+                          </div>
+                          <div class="carousel-inner">
+                            <div class="carousel-item active">
+                              <img src="<%= img[0] %>" class="d-block w-100" alt="<%= product.name %>">
+                            </div>
+                            <% for( let i = 1; i < img.length; i++ ) { %>
+                              <div class="carousel-item">
+                                <img src="<%= img[i] %>" class="d-block w-100" alt="<%= product.name %>">
+                              </div>
+                            <% } %>
+                          </div>
+                          <button class="carousel-control-prev" type="button" data-bs-target="#carousel<%= product.code %>" data-bs-slide="prev">
+                            <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                            <span class="visually-hidden">Previous</span>
+                          </button>
+                          <button class="carousel-control-next" type="button" data-bs-target="#carousel<%= product.code %>" data-bs-slide="next">
+                            <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                            <span class="visually-hidden">Next</span>
+                          </button>
+                        </div>
+                        <!-- carousel end -->
+                      </div>
+                      <div class="col-md-7 p-4">
+                        <h3 class="card-title text-success pt-3"><%= priceForm(product.price) %></h3>
+                        <% const desc = JSON.parse(product.description) %>
+                        <% for( let i = 0; i < desc.length; i++ ) { %>
+                          <h5><%= desc[i] %></h5>
+                        <% } %>
+                        <div class="modal-footer">                          
+
+                          <% if (locals.isLoggedIn) { %>
+                            <!-- Button trigger modal -->
+                          <button type="button" class="btn btn-danger mt-2" data-bs-toggle="modal" data-bs-target="#delete2<%= product.code %>">
+                            Hapus
+                          </button>
+
+                          <!-- Modal -->
+                          <div class="modal fade" id="delete2<%= product.code %>" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+                            <div class="modal-dialog">
+                              <div class="modal-content shadow">
+                                <div class="modal-body">
+                                  <h5>Apakah anda yakin?</h5>
+                                </div>
+                                <div class="modal-footer">
+                                  <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                  <form action="/delete/<%= product.id %>" method="post">
+                                    <button type="submit" value="<%= product.id %>" class="btn btn-danger">Hapus</button>
+                                  </form>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+
+                          <a href="/update/<%= product.id %>" class="btn btn-warning mt-2">Perbaharui</a>
+                          <% } %>
+
+                          <button type="button" class="btn btn-secondary mt-2" data-bs-dismiss="modal">Close</button>
+                          <a href="<%= product.shopee %> " class="btn text-white mt-2 shopee" role="button" target="blank">Order lewat Shopee</a>
+                          <a href="https://api.whatsapp.com/send?phone=<%= owner[0].whatsapp %>&text=Apakah%20&quot;<%= product.name.replace(/\s/g, '%20') %>&quot;%20masih%20ada?" class="btn mt-2 whatsapp text-white" role="button" target="blank">
+                            <span class="bi bi-whatsapp"></span>&nbsp;&nbsp;Chat
+                          </a>
+                        </div>      
+                      </div>
+                    </div>                        
+                  </div>
+                </div>
+                <!-- modal full screen end-->
+              </div>
+            </div>
+          </div>
+        <% }) %>
+      </div>
+    </div>
+    <!-- akhir semua produk -->
+  </div>
+  <!-- product end -->
+
+    <!-- kontak -->
+    <div class="container text-center" id="contact">
+      <div class="row justify-content-center">
+        <div class="col-md-7">
+          <h4 class="mb-4">Hubungi kami</h4>
+          <div class="mb-5">
+            <div class="container border p-3 rounded-3">
+              <h6 class="mb-3">Chat langsung melalui Whatsapp</h6>
+              <div class="form-floating">
+                <textarea class="form-control" placeholder="Leave a comment here" id="floatingTextarea2" style="height: 100px"></textarea>
+                <label for="floatingTextarea2">Tulis pesan Whatsapp anda disini</label>
+                <div class="d-grid col-3 mx-auto">
+                  <a href="https://api.whatsapp.com/send?phone=<%= owner[0].whatsapp %>&text={{ pesan | deleteSpace}}" class="btn mt-3 whatsapp bi bi-whatsapp text-white" role="button" target="blank">&nbsp;Kirim</a>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="container border p-3 rounded-3">
+            <h6 class="mb-3">Atau melalui email</h6>
+            <div class="mb-3">
+              <div class="alert alert-success alert-dismissible fade show d-none" role="alert">
+                <strong>Terimakasih</strong> pesan anda sudah kami terima. Kami akan segera menghubungi anda.
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+              </div>
+              <form method="post" action="/sendmail">
+                <div class="form-floating mb-3">
+                  <input type="text" class="form-control" placeholder="Subject" name="subject" id="subject">
+                  <label for="subject">Subject</label>
+                </div>
+                <div class="form-floating mb-3">
+                  <input type="text" class="form-control" placeholder="Nama Kamu" name="name" id="name">
+                  <label for="name">Nama</label>
+                </div>
+                <div class="form-floating mb-3">
+                  <input type="email" class="form-control" placeholder="name@example.com" name="email" id="email">
+                  <label for="email">Alamat email</label>
+                </div>
+                <div class="form-floating">
+                  <textarea class="form-control" placeholder="Leave a comment here" id="text" style="height: 150px" name="text" id="text"></textarea>
+                  <label for="text">Pesan</label>
+                </div>
+                <button type="submit" class="btn btn-primary mt-3 col-3 mx-auto" value="submit">Kirim</button>                
+              </form>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- Whatsapp -->
+    <% if (!locals.isLoggedIn) { %>
+      <div class="whatsapp-logo shadow">
+        <a href="https://api.whatsapp.com/send?phone=6289632943033&text=Halo%20admin%20Little-f" class="text-decoration-none d-block" target="_blank"><em class="bi bi-whatsapp"></em></a>
+      </div>  
+    <% } %>
+    <!-- Whatsapp end -->
+    <!-- kontak end -->
+    <% if (locals.isLoggedIn) { %>
+     <div class="logout">
+      <a href="/add" class="text-decoration-none d-block bg-success rounded-pill ps-2 pe-2 shadow">+ Produk</a>
+      <a href="/logout" class="text-decoration-none d-block bg-danger mt-2 rounded-pill ps-2 pe-2 shadow">Logout</a>
+     </div>
+    <% } %>
+
+    <script>
+      // Show filtered elements
+      const addClass = (element, name) => {
+        const arr1 = element.className.split(" ");
+        const arr2 = name.split(" ");
+        for (let i = 0; i < arr2.length; i++) {
+          if (arr1.indexOf(arr2[i]) == -1) {
+            element.className += " " + arr2[i];
+          }
+        }
+      }
+
+      // Hide elements that are not selected
+      const removeClass = (element, name) => {
+        const arr1 = element.className.split(" ");
+        const arr2 = name.split(" ");
+        for (let i = 0; i < arr2.length; i++) {
+          while (arr1.indexOf(arr2[i]) > -1) {
+            arr1.splice(arr1.indexOf(arr2[i]), 1);
+          }
+        }
+        element.className = arr1.join(" ");
+      }
+
+      const filterSelection = c => {
+        const x = document.getElementsByClassName("product-card");
+        if (c == "all") c = "";
+        // Add the "show" class (display:block) to the filtered elements, and remove the "show" class from the elements that are not selected
+        for (let i = 0; i < x.length; i++) {
+          removeClass(x[i], "show");
+          if (x[i].className.indexOf(c) > -1) addClass(x[i], "show");
+        }
+      }
+      filterSelection("all")
+
+
+      // Add active class to the current control button (highlight it)
+      const btnContainer = document.getElementById("myBtnContainer");
+      const btns = btnContainer.getElementsByClassName("btn");
+      for ( i = 0; i < btns.length; i++) {
+        btns[i].addEventListener("click", function() {
+          var current = document.getElementsByClassName("active");
+          current[0].className = current[0].className.replace(" active", "");
+          this.className += " active";
+        });
+      }
+    </script>
